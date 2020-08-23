@@ -30,7 +30,7 @@ function! ncm2_biblatex#on_warmup(ctx)
 endfunction
 
 function! ncm2_biblatex#on_complete(ctx)
-  let s:is_enabled = get(b:, 'ncm2_biblatex#enabled',
+  let s:is_enabled = get(b:, 'ncm2_biblatex_enabled',
               \ get(g:, 'ncm2_biblatex#enabled', 0))
   if ! s:is_enabled
     return

@@ -15,10 +15,10 @@ class Source(Ncm2Source):
         self.vim = vim
 
         # Path of bibfile:
-        self.bib_file = os.path.abspath(self.__get_variable(
+        self.__bib_file = os.path.abspath(self.__get_variable(
             "ncm2_biblatex#bibfile", "~/bibliography.bib"))
 
-        self.__bib_file_mtime = os.stat(self.bib_file).st_mtime
+        self.__bib_file_mtime = os.stat(self.__bib_file).st_mtime
         # Create biblio object:
         # self.__biblio = Biblio()
         self.__cached_biblio = None
@@ -55,7 +55,7 @@ class Source(Ncm2Source):
 
     def __read_biblio(self):
         self.__cached_biblio = Biblio()
-        self.__cached_biblio.read(self.bib_file)
+        self.__cached_biblio.read(self.__bib_file)
 
     @property
     def __biblio(self):
