@@ -36,21 +36,18 @@ Enable this source:
 
         autocmd! FileType markdown let b:ncm2_biblatex_enabled = 1
 <
-
         Default: 0
 
 Change the filetypes used by this source:
 >
         let g:ncm2_biblatex#scope = ['markdown', 'textile']
 <
-
         Default: ['markdown', 'rst']
 
 Change the bibfile (*.bib) to be used:
 >
         let g:ncm2_biblatex#bibfile = '~/another_file.bib'
 <
-
         Default: '~/bibliography.bib'
 
 Enable preview display of the source's information:
@@ -64,7 +61,6 @@ Enable reloading of the bibliography file when it has changed:
 >
         let ncm2_biblatex#reloadbibfileonchange = 1
 <
-
         Default: 0
 
 Set a custom key pattern in python regex syntax:
