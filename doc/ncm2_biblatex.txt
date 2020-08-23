@@ -1,0 +1,82 @@
+*ncm2_biblatex* ncm2 source for biblatex
+
+Author: Andrew Pilsch <oncomouse@gmail.com>
+
+===============================================================================
+CONTENTS                                           *ncm2-biblatex-contents*
+
+  1. Introduction                             |ncm2-biblatex-introduction|
+  2. Configuration                            |ncm2-biblatex-configuration|
+
+===============================================================================
+INTRODUCTION                                       *ncm2-biblatex-introduction*
+
+This plugin offers an ncm2[1] source for use with BibTeX and BibLaTeX files. It
+looks for citations of the form:
+
+  [AGreatCitation....
+
+  [@AGreatCitation....
+
+  [AGreatCitation,AnotherCitation....
+
+  [@AGreatCitation,@AnotherCitation....
+
+  [author:AGreatCitation...
+
+  [author,authornumb:AnotherCitation...
+===============================================================================
+CONFIGURATION                                     *ncm2-biblatex-configuration*
+
+Enable this source:
+>
+        let g:ncm2_biblatex#enable = 1
+
+        OR
+
+        autocmd! FileType markdown let b:ncm2_biblatex_enabled = 1
+<
+
+        Default: 0
+
+Change the filetypes used by this source:
+>
+        let g:ncm2_biblatex#scope = ['markdown', 'textile']
+<
+
+        Default: ['markdown', 'rst']
+
+Change the bibfile (*.bib) to be used:
+>
+        let g:ncm2_biblatex#bibfile = '~/another_file.bib'
+<
+
+        Default: '~/bibliography.bib'
+
+Enable preview display of the source's information:
+>
+        let g:ncm2_biblatex#addinfo = 1
+<
+
+        Default: 0
+
+Enable reloading of the bibliography file when it has changed:
+>
+        let ncm2_biblatex#reloadbibfileonchange = 1
+<
+
+        Default: 0
+
+Set a custom key pattern in python regex syntax:
+>
+        let g:deoplete#sources#biblatex#keypattern = '\['
+<
+        Default: 'r'@?[\w-]+'
+
+Set a delimiter between citations in python regex syntax:
+>
+        let g:deoplete#sources#biblatex#delimiter = ';'
+<
+        Default: ','
+===============================================================================
+[1] https://github.com/ncm2/ncm2
