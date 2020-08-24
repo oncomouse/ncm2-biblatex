@@ -83,12 +83,14 @@ class Source(Ncm2Source):
         return item
 
     def on_complete(self, context):
-        key_regex = re.compile('.*{}.*'.format(context["base"]))
-        candidates = [
-            self.__format_candidate(context, candidate) for candidate in list(
-                filter(key_regex.match, self.__biblio.keys()))
-        ]
-        self.complete(context, context['startccol'], candidates)
+        if re.findall(r"@{}".format(context["base"]), context["typed"]):
+            key_regex = re.compile('.*{}.*'.format(context["base"]))
+            candidates = [
+                self.__format_candidate(context, candidate)
+                for candidate in list(
+                    filter(key_regex.match, self.__biblio.keys()))
+            ]
+            self.complete(context, context['startccol'], candidates)
 
 
 source = Source(vim)
