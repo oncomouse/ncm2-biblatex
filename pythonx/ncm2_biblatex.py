@@ -64,28 +64,21 @@ class Source(Ncm2Source):
                   if "date" in entry else ""),
         )
 
-    def __format_candidate(self, context, bib_key, padding):
+    def __format_candidate(self, context, bib_key):
         item = self.match_formalize(context, bib_key)
-        item['word'] = padding + item['word']
         if self.__add_info:
             item['info'] = Source.__format_info(self.__biblio[bib_key])
         return item
 
     def on_complete(self, context):
-        candidates = []
-        key_base = 0
-        for key in re.findall(self.__key_pattern, context["base"]):
-            key_pos = context["base"][slice(key_base)].index(key)
-            padding = context["base"][slice(key_base, key_pos)]
-            key_base = key_pos + len(key)
-            key_regex = re.compile('^{}.*'.format(key))
-            candidates = candidates + [
-                self.__format_candidate(context, candidate, padding)
+        if re.findall(r"@{}".format(context["base"]), context["typed"]):
+            key_regex = re.compile('.*{}.*'.format(context["base"]))
+            candidates = [
+                self.__format_candidate(context, candidate)
                 for candidate in list(
                     filter(key_regex.match, self.__biblio.keys()))
             ]
-        if len(candidates) > 0:
-            self.complete(context, context["startccol"], candidates)
+            self.complete(context, context['startccol'], candidates)
 
 
 source = Source(vim)
