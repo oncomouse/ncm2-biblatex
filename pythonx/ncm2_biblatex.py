@@ -18,8 +18,9 @@ class Source(Ncm2Source):
         self.__bib_file = os.path.abspath(
             self.__get_variable("ncm2_biblatex#bibfile", "~/bibliography.bib"))
 
+        # Cache bibfile:
         self.__bib_file_mtime = os.stat(self.__bib_file).st_mtime
-        # Create biblio object:
+
         self.__cached_biblio = None
 
         # Reload bibliography on change?
@@ -28,6 +29,8 @@ class Source(Ncm2Source):
 
         # Add info?
         self.__add_info = bool(self.__get_variable("ncm2_biblatex#addinfo", 0))
+
+        # Hunt for keys within the larger match:
         self.__key_pattern = re.compile(r"[\w-]+")
 
     def __get_variable(self, key, default):
@@ -71,13 +74,17 @@ class Source(Ncm2Source):
         return item
 
     def on_complete(self, context):
-        key_regex = re.compile('^{}.*'.format(context["base"]).replace(
-            "@", ""))
+        # Because regex can match multiple keys, potentially, grab last one:
+        key = self.__key_pattern.findall(context["base"])[-1]
+        # Find the start of the key:
+        key_offset = context["base"].rindex(key)
+        # Search for the key in the biblio:
+        key_regex = re.compile('^{}.*'.format(key).replace("@", ""))
         candidates = [
             self.__format_candidate(context, candidate) for candidate in list(
                 filter(key_regex.match, self.__biblio.keys()))
         ]
-        self.complete(context, context['startccol'] + 1, candidates)
+        self.complete(context, context['startccol'] + key_offset, candidates)
 
 
 source = Source(vim)
