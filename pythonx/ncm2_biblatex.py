@@ -20,7 +20,6 @@ class Source(Ncm2Source):
 
         self.__bib_file_mtime = os.stat(self.__bib_file).st_mtime
         # Create biblio object:
-        # self.__biblio = Biblio()
         self.__cached_biblio = None
 
         # Reload bibliography on change?
@@ -29,18 +28,7 @@ class Source(Ncm2Source):
 
         # Add info?
         self.__add_info = bool(self.__get_variable("ncm2_biblatex#addinfo", 0))
-
-        # Build the word_pattern regex:
-        pattern_delimiter = self.__get_variable("ncm2_biblatex#delimiter", ",")
-        pattern_start = self.__get_variable("ncm2_biblatex#startpattern",
-                                            r"\[(?:[\w,]+:)?")
-        pattern_key = self.__get_variable("ncm2_biblatex#keypattern",
-                                          r"@?[\w-]+")
-        pattern_current = r"{}$".format(pattern_key)
-        pattern_completed = r"(?:{}{})*".format(pattern_key, pattern_delimiter)
-
-        self.word_pattern = re.compile(pattern_start + pattern_completed +
-                                       pattern_current)
+        self.__key_pattern = re.compile(r"[\w-]+")
 
     def __get_variable(self, key, default):
         return self.vim.eval("get(g:, '{}', '{}')".format(key, default))
@@ -83,12 +71,16 @@ class Source(Ncm2Source):
         return item
 
     def on_complete(self, context):
-        key_regex = re.compile('.*{}.*'.format(context["base"]))
-        candidates = [
-            self.__format_candidate(context, candidate) for candidate in list(
-                filter(key_regex.match, self.__biblio.keys()))
-        ]
-        self.complete(context, context['startccol'], candidates)
+        candidates = []
+        for key in re.findall(self.__key_pattern, context["base"]):
+            key_regex = re.compile('^{}.*'.format(key))
+            candidates = candidates + [
+                self.__format_candidate(context, candidate)
+                for candidate in list(
+                    filter(key_regex.match, self.__biblio.keys()))
+            ]
+        if len(candidates) > 0:
+            self.complete(context, context["startccol"], candidates)
 
 
 source = Source(vim)
