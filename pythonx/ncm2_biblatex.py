@@ -2,7 +2,7 @@
 
 import os
 import re
-# from glob import glob
+from glob import glob
 from bibparse import Biblio, BibError
 from ncm2 import Ncm2Source, getLogger
 import vim
@@ -23,9 +23,17 @@ class Source(Ncm2Source):
         self.__bib_files = []
         if isinstance(self.__bib_file, list):
             for file in self.__bib_file:
-                self.__bib_files.append(os.path.abspath(file))
+                if self.__glob_re.search(file):
+                    for glob_file in glob(file):
+                        self.__bib_files.append(os.path.abspath(glob_file))
+                else:
+                    self.__bib_files.append(os.path.abspath(file))
         else:
-            self.__bib_files.append(os.path.abspath(self.__bib_file))
+            if self.__glob_re.search(self.__bib_file):
+                for glob_file in glob(self.__bib_file):
+                    self.__bib_files.append(os.path.abspath(glob_file))
+            else:
+                self.__bib_files.append(os.path.abspath(self.__bib_file))
 
         # Cache bibfile:
         # self.__bib_file_mtime = os.stat(self.__bib_file).st_mtime
