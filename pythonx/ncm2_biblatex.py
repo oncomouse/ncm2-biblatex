@@ -2,7 +2,8 @@
 
 import os
 import re
-from bibparse import Biblio
+# from glob import glob
+from bibparse import Biblio, BibError
 from ncm2 import Ncm2Source, getLogger
 import vim
 
@@ -15,11 +16,22 @@ class Source(Ncm2Source):
         self.vim = vim
 
         # Path of bibfile:
-        self.__bib_file = os.path.abspath(
-            self.__get_variable("ncm2_biblatex#bibfile", "~/bibliography.bib"))
+        self.__bib_file = self.__get_variable("ncm2_biblatex#bibfile",
+                                              "~/bibliography.bib")
+        self.__glob_re = re.compile(r"\*")
+
+        self.__bib_files = []
+        if isinstance(self.__bib_file, list):
+            for file in self.__bib_file:
+                self.__bib_files.append(os.path.abspath(file))
+        else:
+            self.__bib_files.append(os.path.abspath(self.__bib_file))
 
         # Cache bibfile:
-        self.__bib_file_mtime = os.stat(self.__bib_file).st_mtime
+        # self.__bib_file_mtime = os.stat(self.__bib_file).st_mtime
+        self.__bib_files_mtimes = {}
+        for file in self.__bib_files:
+            self.__bib_files_mtimes[file] = os.stat(file).st_mtime
 
         self.__cached_biblio = None
 
@@ -41,16 +53,22 @@ class Source(Ncm2Source):
 
     def __read_biblio(self):
         self.__cached_biblio = Biblio()
-        self.__cached_biblio.read(self.__bib_file)
+        for file in self.__bib_files:
+            try:
+                self.__cached_biblio.read(file)
+            except BibError as err:
+                print(err)
 
     @property
     def __biblio(self):
+        # if False:
         if self.__reload_bibliography_on_change:
-            mtime = os.stat(self.__bib_file).st_mtime
+            for file in self.__bib_files:
+                mtime = os.stat(file).st_mtime
 
-            if mtime != self.__bib_file_mtime:
-                self.__bib_file_mtime = mtime
-                self.__read_biblio()
+                if mtime != self.__bib_files_mtimes[file]:
+                    self.__bib_files_mtimes[file] = mtime
+                    self.__read_biblio()
 
         return self.__cached_biblio
 
