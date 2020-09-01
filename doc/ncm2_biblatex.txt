@@ -44,10 +44,17 @@ Change the filetypes used by this source:
 <
         Default: ['markdown', 'rst']
 
-Change the bibfile (*.bib) to be used:
+Change the bibfile(s) (*.bib) to be used:
 >
         let g:ncm2_biblatex#bibfile = '~/another_file.bib'
 <
+
+OR
+
+>
+        let g:ncm2_biblatex#bibfile = ['~/bib.bib', '~/another-bib.bib']
+<
+
         Default: '~/bibliography.bib'
 
 Enable preview display of the source's information:
