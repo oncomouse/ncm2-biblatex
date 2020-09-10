@@ -15,8 +15,8 @@ let g:ncm2_biblatex#source = get(g:, 'ncm2_biblatex#biblatex_source', {
       \ 'ready': 0,
       \ 'mark': g:ncm2_biblatex#mark,
       \ 'scope': g:ncm2_biblatex#scope,
+      \ 'complete_length': 4,
       \ 'word_pattern': '\[(?:[\w,]+:)?(?:@?[\w-]+,)*@?[\w-]+',
-      \ 'complete_length': 3,
       \ 'on_complete': 'ncm2_biblatex#on_complete',
       \ 'on_warmup': 'ncm2_biblatex#on_warmup'
       \ })
@@ -25,6 +25,12 @@ let g:ncm2_biblatex#source = extend(g:ncm2_biblatex#source,
       \ 'force')
 function! ncm2_biblatex#init() abort
   call ncm2#register_source(g:ncm2_biblatex#source)
+  " This autocmd updates the working directory on a directory change to reload
+  " relative bibliographies:
+  augroup ncm2_update_dirchange
+    autocmd!
+    autocmd DirChanged * call g:ncm2_biblatex#proc.try_notify('source_bibs')
+  augroup END
 endfunction
 
 function! ncm2_biblatex#on_warmup(ctx)
@@ -39,3 +45,5 @@ function! ncm2_biblatex#on_complete(ctx)
   endif
   call g:ncm2_biblatex#proc.try_notify('on_complete', a:ctx)
 endfunction
+
+

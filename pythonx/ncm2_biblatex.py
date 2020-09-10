@@ -20,26 +20,11 @@ class Source(Ncm2Source):
                                               "~/bibliography.bib")
         self.__glob_re = re.compile(r"\*")
 
-        self.__bib_files = []
-        if isinstance(self.__bib_file, list):
-            for file in self.__bib_file:
-                if self.__glob_re.search(file):
-                    for glob_file in glob(file):
-                        self.__bib_files.append(os.path.abspath(glob_file))
-                else:
-                    self.__bib_files.append(os.path.abspath(file))
-        else:
-            if self.__glob_re.search(self.__bib_file):
-                for glob_file in glob(self.__bib_file):
-                    self.__bib_files.append(os.path.abspath(glob_file))
-            else:
-                self.__bib_files.append(os.path.abspath(self.__bib_file))
-
         # Cache bibfile:
-        # self.__bib_file_mtime = os.stat(self.__bib_file).st_mtime
+        self.__bibfiles = []
         self.__bib_files_mtimes = {}
-        for file in self.__bib_files:
-            self.__bib_files_mtimes[file] = os.stat(file).st_mtime
+
+        self.__pwd = self.vim.command_output(":pwd")
 
         self.__cached_biblio = None
 
@@ -57,7 +42,7 @@ class Source(Ncm2Source):
         return self.vim.eval("get(g:, '{}', '{}')".format(key, default))
 
     def on_warmup(self, _context):
-        self.__read_biblio()
+        self.source_bibs()
 
     def __read_biblio(self):
         self.__cached_biblio = Biblio()
@@ -99,6 +84,34 @@ class Source(Ncm2Source):
             item['info'] = Source.__format_info(self.__biblio[bib_key])
         return item
 
+    def __source_bib(self, file):
+        self.__bib_files.append(os.path.abspath(file))
+
+    def __source_bibs(self, file):
+        if self.__glob_re.search(file):
+            for glob_file in glob(file):
+                self.__source_bib(glob_file)
+        else:
+            self.__source_bib(file)
+
+    def source_bibs(self):
+        self.__bib_files = []
+        files = self.__bib_file
+        # Detect if the working directory has been changed by Vim:
+        new_pwd = self.vim.command_output(":pwd")
+        if self.__pwd != new_pwd:
+            # If Vim is in a new working directory, change Python's PWD, too:
+            os.chdir(new_pwd)
+            self.__pwd = new_pwd
+        if not isinstance(self.__bib_file, list):
+            files = [self.__bib_file]
+        for file in files:
+            self.__source_bibs(file)
+        for file in self.__bib_files:
+            if not file in self.__bib_files_mtimes:
+                self.__read_biblio()
+            self.__bib_files_mtimes[file] = os.stat(file).st_mtime
+
     def on_complete(self, context):
         # Because regex can match multiple keys, potentially, grab last one:
         key = self.__key_pattern.findall(context["base"])[-1]
@@ -115,5 +128,6 @@ class Source(Ncm2Source):
 
 source = Source(vim)
 
+source_bibs = source.source_bibs
 on_warmup = source.on_warmup
 on_complete = source.on_complete
